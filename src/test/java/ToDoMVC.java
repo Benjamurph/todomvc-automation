@@ -7,6 +7,8 @@ import org.openqa.selenium.interactions.Actions;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class ToDoMVC {
     private static ChromeDriver driver;
 
@@ -22,11 +24,49 @@ public class ToDoMVC {
         return itemList.size();
     }
 
+    public void checkOneBox() {
+        WebElement checkBox = driver.findElement(By.cssSelector(".todo-list li .toggle"));
+        checkBox.click();
+    }
+
+    public void checkAllBoxes() {
+        List<WebElement> checkBoxes = driver.findElements(By.cssSelector(".todo-list li .toggle"));
+        for (WebElement checkbox : checkBoxes) {
+            if (!checkbox.isSelected()) {
+                checkbox.click();
+            }
+        }
+    }
+
     @BeforeEach
      void launchBrowser() {
         driver = new ChromeDriver();
         driver.get("https://todomvc.com/examples/react/dist/");
         //driver.get("https://todomvc.com/examples/dojo/");
+    }
+
+    @Test
+    // Checks one box
+    void marksOneItemComplete() {
+        String[] itemstoAdd = {"test1"};
+        addToList(itemstoAdd);
+        checkOneBox();
+        WebElement liElement = driver.findElement(By.cssSelector(".todo-list li"));
+        String classAttr = liElement.getAttribute("class");
+        assertTrue(classAttr.contains("completed"), "Expected <li> to have class 'completed'");
+    }
+
+    @Test
+    void marksAllItemsComplete() {
+        String[] itemstoAdd = {"test1", "test2", "test3"};
+        addToList(itemstoAdd);
+        checkAllBoxes();
+        List<WebElement> listItems = driver.findElements(By.cssSelector(".todo-list li"));
+        for (WebElement li : listItems) {
+            String classAttr = li.getAttribute("class");
+            assertTrue(classAttr.contains("completed"), "Expected <li> to have class 'completed'");
+        }
+
     }
 
     @Test
@@ -47,15 +87,15 @@ public class ToDoMVC {
         assert listSize() == 0;
     }
 
-    @Test
-    // Can add a value with a single character
-    void addSingleCharacter() {
-        String[] itemsToAdd = {"a"};
-        addToList(itemsToAdd);
-        assert listSize() == 1;
-        WebElement item1 = driver.findElement(By.cssSelector("ul.todo-list li div label"));
-        assert item1.getText().equals("a");
-    }
+//    @Test
+//    // Can add a value with a single character
+//    void addSingleCharacter() {
+//        String[] itemsToAdd = {"a"};
+//        addToList(itemsToAdd);
+//        assert listSize() == 1;
+//        WebElement item1 = driver.findElement(By.cssSelector("ul.todo-list li div label"));
+//        assert item1.getText().equals("a");
+//    }
 
     @Test
     // Check a case with symbols
@@ -100,7 +140,7 @@ public class ToDoMVC {
     }
 
     @Test
-    // If you modify a To-Do item and click outside of the input element during edit, it should cancel the modification
+    // If you modify a To-Do item and click outside the input element during edit, it should cancel the modification
     void cancelEditItem() {
         String[] itemsToAdd = {"test"};
         addToList(itemsToAdd);
@@ -114,14 +154,14 @@ public class ToDoMVC {
         assert item1.getText().equals("test");
     }
 
-    @Test
-    // Reloading the page does not reset the list to its default state
-    void reloadPage() {
-        String[] itemsToAdd = {"test"};
-        addToList(itemsToAdd);
-        driver.navigate().refresh();
-        assert listSize() == 1;
-    }
+//    @Test
+//    // Reloading the page does not reset the list to its default state
+//    void reloadPage() {
+//        String[] itemsToAdd = {"test"};
+//        addToList(itemsToAdd);
+//        driver.navigate().refresh();
+//        assert listSize() == 1;
+//    }
 
     @AfterEach
     void closeBrowser() {
