@@ -4,9 +4,13 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ToDoMVC {
@@ -26,7 +30,9 @@ public class ToDoMVC {
 
     public void checkOneBox() {
         WebElement checkBox = driver.findElement(By.cssSelector(".todo-list li .toggle"));
-        checkBox.click();
+        if (!checkBox.isSelected()) {
+            checkBox.click();
+        }
     }
 
     public void checkAllBoxes() {
@@ -54,11 +60,27 @@ public class ToDoMVC {
         }
     }
 
+    public String getStatusBarCount() {
+        WebElement statusMessage = driver.findElement(By.cssSelector(".todo-count"));
+        return statusMessage.getText();
+    }
+
     @BeforeEach
      void launchBrowser() {
         driver = new ChromeDriver();
         driver.get("https://todomvc.com/examples/react/dist/");
         //driver.get("https://todomvc.com/examples/dojo/");
+    }
+
+    @Test
+    void ItemsLeftMessages() {
+        String[] itemstoAdd = {"test1", "test2"};
+        addToList(itemstoAdd);
+        assertEquals("2 items left!", getStatusBarCount());
+        checkOneBox();
+        assertEquals("1 item left!", getStatusBarCount());
+        checkAllBoxes();
+        assertEquals("0 items left!", getStatusBarCount());
     }
 
     @Test
