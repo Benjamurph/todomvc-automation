@@ -38,11 +38,46 @@ public class ToDoMVC {
         }
     }
 
+    public void deleteOneItem() {
+        WebElement item = driver.findElement(By.cssSelector(".todo-list li"));
+        Actions actions = new Actions(driver);
+        actions.moveToElement(item).perform();
+
+        WebElement deleteButton = driver.findElement(By.cssSelector(".todo-list li .destroy"));
+        deleteButton.click();
+    }
+
+    public void deleteAllItems() {
+        List<WebElement> items = driver.findElements(By.cssSelector(".todo-list li .destroy"));
+        for (WebElement item : items) {
+            item.click();
+        }
+    }
+
     @BeforeEach
      void launchBrowser() {
         driver = new ChromeDriver();
         driver.get("https://todomvc.com/examples/react/dist/");
         //driver.get("https://todomvc.com/examples/dojo/");
+    }
+
+    @Test
+    void testDeleteIncompleteItem() {
+        String[] itemstoAdd = {"test1"};
+        addToList(itemstoAdd);
+        deleteOneItem();
+        By deletedItemLocator = By.cssSelector(".todo-list li");
+        assertTrue(driver.findElements(deletedItemLocator).isEmpty(), "Item should not be present in the list");
+    }
+
+    @Test
+    void testDeleteCompletedItem() {
+        String[] itemstoAdd = {"test1"};
+        addToList(itemstoAdd);
+        checkOneBox();
+        deleteOneItem();
+        By deletedItemLocator = By.cssSelector(".todo-list li");
+        assertTrue(driver.findElements(deletedItemLocator).isEmpty(), "Item should not be present in the list");
     }
 
     @Test
@@ -67,6 +102,16 @@ public class ToDoMVC {
             assertTrue(classAttr.contains("completed"), "Expected <li> to have class 'completed'");
         }
 
+    }
+
+    @Test
+    void markItemIncomplete() {
+        String[] itemstoAdd = {"test1"};
+        addToList(itemstoAdd);
+        checkOneBox();
+        checkOneBox();
+        WebElement item1 = driver.findElement(By.cssSelector("ul.todo-list li div label"));
+        assert item1.getText().equals("test1");
     }
 
     @Test
