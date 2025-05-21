@@ -30,9 +30,7 @@ public class ToDoMVC {
 
     public void checkOneBox() {
         WebElement checkBox = driver.findElement(By.cssSelector(".todo-list li .toggle"));
-        if (!checkBox.isSelected()) {
-            checkBox.click();
-        }
+        checkBox.click();
     }
 
     public void checkAllBoxes() {
@@ -58,6 +56,14 @@ public class ToDoMVC {
         for (WebElement item : items) {
             item.click();
         }
+    }
+
+    public void filterSetup() {
+        String[] itemsToAdd = {"test1", "test2"};
+        addToList(itemsToAdd);
+        checkAllBoxes();
+        String[] itemsToAdd2 = {"test3", "test4"};
+        addToList(itemsToAdd2);
     }
 
     public String getStatusBarCount() {
@@ -222,6 +228,37 @@ public class ToDoMVC {
         driver.findElement(By.className("new-todo")).click();
         WebElement item1 = driver.findElement(By.cssSelector("ul.todo-list li div label"));
         assert item1.getText().equals("test");
+    }
+
+    @Test
+        // The list can be filtered to include only incomplete items
+    void activeFilter() {
+        filterSetup();
+        driver.findElement(By.linkText("Active")).click();
+        assert listSize() == 2;
+        List<WebElement> activeItems = driver.findElements(By.cssSelector("ul.todo-list li div label"));
+        assert activeItems.get(0).getText().equals("test3");
+        assert activeItems.get(1).getText().equals("test4");
+    }
+
+    @Test
+        // The list can be filtered to include only incomplete items
+    void completedFilter() {
+        filterSetup();
+        driver.findElement(By.linkText("Completed")).click();
+        assert listSize() == 2;
+        List<WebElement> activeItems = driver.findElements(By.cssSelector("ul.todo-list li div label"));
+        assert activeItems.get(0).getText().equals("test1");
+        assert activeItems.get(1).getText().equals("test2");
+    }
+
+    @Test
+        // The list can return to being unfiltered
+    void allFilter() {
+        filterSetup();
+        driver.findElement(By.linkText("Completed")).click();
+        driver.findElement(By.linkText("All")).click();
+        assert listSize() == 4;
     }
 
 //    @Test
