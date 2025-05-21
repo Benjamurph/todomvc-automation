@@ -65,6 +65,8 @@ public class ToDoMVC {
         return statusMessage.getText();
     }
 
+
+
     @BeforeEach
      void launchBrowser() {
         driver = new ChromeDriver();
@@ -82,6 +84,7 @@ public class ToDoMVC {
         checkAllBoxes();
         assertEquals("0 items left!", getStatusBarCount());
     }
+
 
     @Test
     void testDeleteIncompleteItem() {
