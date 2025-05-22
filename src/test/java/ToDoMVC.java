@@ -247,6 +247,33 @@ public class ToDoMVC {
         assert page.listSize() == 4;
     }
 
+    // Tests involving the "Clear completed" button
+
+    @Test
+        // A "Clear completed" link appears in the status bar after an incomplete item is marked as complete
+    void clearCompletedAppears() {
+        String[] itemsToAdd = {"test1"};
+        page.addToList(itemsToAdd);
+        WebElement clearCompletedButton = driver.findElement(By.className("clear-completed"));
+        assert !clearCompletedButton.isDisplayed();
+        page.setCheckboxState(0, true);
+        assert clearCompletedButton.isDisplayed();
+        page.setCheckboxState(0, false);
+        assert !clearCompletedButton.isDisplayed();
+    }
+
+    @Test
+        // All completed items can be deleted from the list at once
+    void clearCompleted() {
+        page.filterSetup();
+        assert page.listSize() == 4;
+        driver.findElement(By.className("clear-completed")).click();
+        assert page.listSize() == 2;
+        List<WebElement> activeItems = driver.findElements(By.cssSelector("ul.todo-list li div label"));
+        assert activeItems.get(0).getText().equals("test3");
+        assert activeItems.get(1).getText().equals("test4");
+    }
+
     // Tests involving browser reloading
 
     @Test
@@ -256,6 +283,16 @@ public class ToDoMVC {
         page.addToList(itemsToAdd);
         driver.navigate().refresh();
         assert page.listSize() == 1;
+    }
+
+    @Test
+        // ToDo items from one variant do not "bleed over" into other applications
+    void noBleedOver() {
+        String[] itemsToAdd = {"test1"};
+        page.addToList(itemsToAdd);
+        driver.get("https://todomvc.com/examples/dojo/");
+        assert page.listSize() == 0;
+
     }
 
     @AfterEach
