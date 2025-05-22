@@ -74,6 +74,11 @@ public class ToDoMVC {
         return statusMessage.getText();
     }
 
+    public void locateDownArrow() {
+        WebElement downArrow = driver.findElement(By.cssSelector(".toggle-all"));
+        downArrow.click();
+    }
+
 
 
     @BeforeEach
@@ -81,6 +86,23 @@ public class ToDoMVC {
         driver = new ChromeDriver();
         driver.get("https://todomvc.com/examples/react/dist/");
         //driver.get("https://todomvc.com/examples/dojo/");
+    }
+
+    @Test
+    void testMarkCompleteUsingArrow() {
+        String[] itemstoAdd = {"test1", "test2"};
+        addToList(itemstoAdd);
+        locateDownArrow();
+        assertEquals("0 items left!", getStatusBarCount());
+    }
+
+    @Test
+    void testMarkIncompleteUsingArrow() {
+        String[] itemstoAdd = {"test1", "test2"};
+        addToList(itemstoAdd);
+        setAllCheckboxesState(true);
+        locateDownArrow();
+        assertEquals("2 items left!", getStatusBarCount());
     }
 
     @Test
