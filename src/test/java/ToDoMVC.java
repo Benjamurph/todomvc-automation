@@ -1,91 +1,24 @@
 import org.junit.jupiter.api.*;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-
-import java.time.Duration;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ToDoMVC {
-    private static ChromeDriver driver;
-
-    public void addToList(String[] items) {
-        for (String item : items) {
-            WebElement input = driver.findElement(By.className("new-todo"));
-            input.sendKeys(item + Keys.ENTER);
-        }
-    }
-
-    public int listSize() {
-        List<WebElement> itemList = driver.findElements(By.cssSelector("ul.todo-list li"));
-        return itemList.size();
-    }
-
-    public void setCheckboxState(int index, boolean shouldBeChecked) {
-        List<WebElement> checkBoxes = driver.findElements(By.cssSelector(".todo-list li .toggle"));
-        WebElement checkBox = checkBoxes.get(index);
-        if (checkBox.isSelected() != shouldBeChecked) {
-            checkBox.click();
-        }
-    }
-
-    public void setAllCheckboxesState(boolean shouldBeChecked) {
-        List<WebElement> checkBoxes = driver.findElements(By.cssSelector(".todo-list li .toggle"));
-        for (WebElement checkBox : checkBoxes) {
-            if (checkBox.isSelected() != shouldBeChecked) {
-                checkBox.click();
-            }
-        }
-    }
-
-    public void deleteOneItem() {
-        WebElement item = driver.findElement(By.cssSelector(".todo-list li"));
-        Actions actions = new Actions(driver);
-        actions.moveToElement(item).perform();
-
-        WebElement deleteButton = driver.findElement(By.cssSelector(".todo-list li .destroy"));
-        deleteButton.click();
-    }
-
-    public void deleteAllItems() {
-        List<WebElement> items = driver.findElements(By.cssSelector(".todo-list li .destroy"));
-        for (WebElement item : items) {
-            item.click();
-        }
-    }
-
-    public void filterSetup() {
-        String[] itemsToAdd = {"test1", "test2"};
-        addToList(itemsToAdd);
-        setAllCheckboxesState(true);
-        String[] itemsToAdd2 = {"test3", "test4"};
-        addToList(itemsToAdd2);
-    }
-
-    public String getStatusBarCount() {
-        WebElement statusMessage = driver.findElement(By.cssSelector(".todo-count"));
-        return statusMessage.getText();
-    }
-
-    public void locateDownArrow() {
-        WebElement downArrow = driver.findElement(By.cssSelector(".toggle-all"));
-        downArrow.click();
-    }
-
-
+    private WebDriver driver;
+    private PageObjectModel page;
 
     @BeforeEach
-     void launchBrowser() {
+     public void launchBrowser() {
         driver = new ChromeDriver();
         driver.get("https://todomvc.com/examples/react/dist/");
-        //driver.get("https://todomvc.com/examples/dojo/");
+        page = new PageObjectModel(driver);
     }
 
     @Test
@@ -97,37 +30,37 @@ public class ToDoMVC {
     @Test
     void testMarkCompleteUsingArrow() {
         String[] itemstoAdd = {"test1", "test2"};
-        addToList(itemstoAdd);
-        locateDownArrow();
-        assertEquals("0 items left!", getStatusBarCount());
+        page.addToList(itemstoAdd);
+        page.locateDownArrow();
+        assertEquals("0 items left!", page.getStatusBarCount());
     }
 
     @Test
     void testMarkIncompleteUsingArrow() {
         String[] itemstoAdd = {"test1", "test2"};
-        addToList(itemstoAdd);
-        setAllCheckboxesState(true);
-        locateDownArrow();
-        assertEquals("2 items left!", getStatusBarCount());
+        page.addToList(itemstoAdd);
+        page.setAllCheckboxesState(true);
+        page.locateDownArrow();
+        assertEquals("2 items left!", page.getStatusBarCount());
     }
 
     @Test
     void ItemsLeftMessages() {
         String[] itemstoAdd = {"test1", "test2"};
-        addToList(itemstoAdd);
-        assertEquals("2 items left!", getStatusBarCount());
-        setCheckboxState(0, true);
-        assertEquals("1 item left!", getStatusBarCount());
-        setAllCheckboxesState(true);
-        assertEquals("0 items left!", getStatusBarCount());
+        page.addToList(itemstoAdd);
+        assertEquals("2 items left!", page.getStatusBarCount());
+        page.setCheckboxState(0, true);
+        assertEquals("1 item left!", page.getStatusBarCount());
+        page.setAllCheckboxesState(true);
+        assertEquals("0 items left!", page.getStatusBarCount());
     }
 
 
     @Test
     void testDeleteIncompleteItem() {
         String[] itemstoAdd = {"test1"};
-        addToList(itemstoAdd);
-        deleteOneItem();
+        page.addToList(itemstoAdd);
+        page.deleteOneItem();
         By deletedItemLocator = By.cssSelector(".todo-list li");
         assertTrue(driver.findElements(deletedItemLocator).isEmpty(), "Item should not be present in the list");
     }
@@ -135,9 +68,9 @@ public class ToDoMVC {
     @Test
     void testDeleteCompletedItem() {
         String[] itemstoAdd = {"test1"};
-        addToList(itemstoAdd);
-        setCheckboxState(0, true);
-        deleteOneItem();
+        page.addToList(itemstoAdd);
+        page.setCheckboxState(0, true);
+        page.deleteOneItem();
         By deletedItemLocator = By.cssSelector(".todo-list li");
         assertTrue(driver.findElements(deletedItemLocator).isEmpty(), "Item should not be present in the list");
     }
@@ -145,8 +78,8 @@ public class ToDoMVC {
     @Test
     void marksOneItemComplete() {
         String[] itemstoAdd = {"test1"};
-        addToList(itemstoAdd);
-        setCheckboxState(0, true);
+        page.addToList(itemstoAdd);
+        page.setCheckboxState(0, true);
         WebElement liElement = driver.findElement(By.cssSelector(".todo-list li"));
         String classAttr = liElement.getAttribute("class");
         assertTrue(classAttr.contains("completed"), "Expected <li> to have class 'completed'");
@@ -155,8 +88,8 @@ public class ToDoMVC {
     @Test
     void marksAllItemsComplete() {
         String[] itemstoAdd = {"test1", "test2", "test3"};
-        addToList(itemstoAdd);
-        setAllCheckboxesState(true);
+        page.addToList(itemstoAdd);
+        page.setAllCheckboxesState(true);
         List<WebElement> listItems = driver.findElements(By.cssSelector(".todo-list li"));
         for (WebElement li : listItems) {
             String classAttr = li.getAttribute("class");
@@ -168,9 +101,9 @@ public class ToDoMVC {
     @Test
     void markItemIncomplete() {
         String[] itemstoAdd = {"test1"};
-        addToList(itemstoAdd);
-        setCheckboxState(0, true);
-        setCheckboxState(0, false);
+        page.addToList(itemstoAdd);
+        page.setCheckboxState(0, true);
+        page.setCheckboxState(0, false);
         WebElement item1 = driver.findElement(By.cssSelector("ul.todo-list li div label"));
         assert item1.getText().equals("test1");
     }
@@ -179,8 +112,8 @@ public class ToDoMVC {
     // New todo items can be added
     void addItem() {
         String[] itemsToAdd = {"test1"};
-        addToList(itemsToAdd);
-        assert listSize() == 1;
+        page.addToList(itemsToAdd);
+        assert page.listSize() == 1;
         WebElement item1 = driver.findElement(By.cssSelector("ul.todo-list li div label"));
         assert item1.getText().equals("test1");
     }
@@ -189,8 +122,8 @@ public class ToDoMVC {
     // Can't add an item with an empty value
     void noEmptyItems() {
         String[] itemsToAdd = {""};
-        addToList(itemsToAdd);
-        assert listSize() == 0;
+        page.addToList(itemsToAdd);
+        assert page.listSize() == 0;
     }
 
 //    @Test
@@ -207,8 +140,8 @@ public class ToDoMVC {
     // Check a case with symbols
     void addSymbols() {
         String[] itemsToAdd = {"!@£$"};
-        addToList(itemsToAdd);
-        assert listSize() == 1;
+        page.addToList(itemsToAdd);
+        assert page.listSize() == 1;
         WebElement item1 = driver.findElement(By.cssSelector("ul.todo-list li div label"));
         assert item1.getText().equals("!@£$");
     }
@@ -235,7 +168,7 @@ public class ToDoMVC {
     // Todo items can always be modified
     void editItem() {
         String[] itemsToAdd = {"test"};
-        addToList(itemsToAdd);
+        page.addToList(itemsToAdd);
         WebElement element = driver.findElement(By.cssSelector("ul.todo-list li div label"));
         Actions builder = new Actions(driver);
         builder.doubleClick(element).perform();
@@ -249,7 +182,7 @@ public class ToDoMVC {
     // If you modify a To-Do item and click outside the input element during edit, it should cancel the modification
     void cancelEditItem() {
         String[] itemsToAdd = {"test"};
-        addToList(itemsToAdd);
+        page.addToList(itemsToAdd);
         WebElement item1Label = driver.findElement(By.cssSelector("ul.todo-list li div label"));
         Actions builder = new Actions(driver);
         builder.doubleClick(item1Label).perform();
@@ -263,9 +196,9 @@ public class ToDoMVC {
     @Test
         // The list can be filtered to include only incomplete items
     void activeFilter() {
-        filterSetup();
+        page.filterSetup();
         driver.findElement(By.linkText("Active")).click();
-        assert listSize() == 2;
+        assert page.listSize() == 2;
         List<WebElement> activeItems = driver.findElements(By.cssSelector("ul.todo-list li div label"));
         assert activeItems.get(0).getText().equals("test3");
         assert activeItems.get(1).getText().equals("test4");
@@ -274,9 +207,9 @@ public class ToDoMVC {
     @Test
         // The list can be filtered to include only incomplete items
     void completedFilter() {
-        filterSetup();
+        page.filterSetup();
         driver.findElement(By.linkText("Completed")).click();
-        assert listSize() == 2;
+        assert page.listSize() == 2;
         List<WebElement> activeItems = driver.findElements(By.cssSelector("ul.todo-list li div label"));
         assert activeItems.get(0).getText().equals("test1");
         assert activeItems.get(1).getText().equals("test2");
@@ -285,10 +218,10 @@ public class ToDoMVC {
     @Test
         // The list can return to being unfiltered
     void allFilter() {
-        filterSetup();
+        page.filterSetup();
         driver.findElement(By.linkText("Completed")).click();
         driver.findElement(By.linkText("All")).click();
-        assert listSize() == 4;
+        assert page.listSize() == 4;
     }
 
 //    @Test
@@ -301,7 +234,7 @@ public class ToDoMVC {
 //    }
 
     @AfterEach
-    void closeBrowser() {
+    public void closeBrowser() {
         driver.quit();
     }
 }
