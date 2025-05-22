@@ -28,16 +28,19 @@ public class ToDoMVC {
         return itemList.size();
     }
 
-    public void checkOneBox() {
-        WebElement checkBox = driver.findElement(By.cssSelector(".todo-list li .toggle"));
-        checkBox.click();
+    public void setCheckboxState(int index, boolean shouldBeChecked) {
+        List<WebElement> checkBoxes = driver.findElements(By.cssSelector(".todo-list li .toggle"));
+        WebElement checkBox = checkBoxes.get(index);
+        if (checkBox.isSelected() != shouldBeChecked) {
+            checkBox.click();
+        }
     }
 
-    public void checkAllBoxes() {
+    public void setAllCheckboxesState(boolean shouldBeChecked) {
         List<WebElement> checkBoxes = driver.findElements(By.cssSelector(".todo-list li .toggle"));
-        for (WebElement checkbox : checkBoxes) {
-            if (!checkbox.isSelected()) {
-                checkbox.click();
+        for (WebElement checkBox : checkBoxes) {
+            if (checkBox.isSelected() != shouldBeChecked) {
+                checkBox.click();
             }
         }
     }
@@ -61,7 +64,7 @@ public class ToDoMVC {
     public void filterSetup() {
         String[] itemsToAdd = {"test1", "test2"};
         addToList(itemsToAdd);
-        checkAllBoxes();
+        setAllCheckboxesState(true);
         String[] itemsToAdd2 = {"test3", "test4"};
         addToList(itemsToAdd2);
     }
@@ -85,9 +88,9 @@ public class ToDoMVC {
         String[] itemstoAdd = {"test1", "test2"};
         addToList(itemstoAdd);
         assertEquals("2 items left!", getStatusBarCount());
-        checkOneBox();
+        setCheckboxState(0, true);
         assertEquals("1 item left!", getStatusBarCount());
-        checkAllBoxes();
+        setAllCheckboxesState(true);
         assertEquals("0 items left!", getStatusBarCount());
     }
 
@@ -105,18 +108,17 @@ public class ToDoMVC {
     void testDeleteCompletedItem() {
         String[] itemstoAdd = {"test1"};
         addToList(itemstoAdd);
-        checkOneBox();
+        setCheckboxState(0, true);
         deleteOneItem();
         By deletedItemLocator = By.cssSelector(".todo-list li");
         assertTrue(driver.findElements(deletedItemLocator).isEmpty(), "Item should not be present in the list");
     }
 
     @Test
-    // Checks one box
     void marksOneItemComplete() {
         String[] itemstoAdd = {"test1"};
         addToList(itemstoAdd);
-        checkOneBox();
+        setCheckboxState(0, true);
         WebElement liElement = driver.findElement(By.cssSelector(".todo-list li"));
         String classAttr = liElement.getAttribute("class");
         assertTrue(classAttr.contains("completed"), "Expected <li> to have class 'completed'");
@@ -126,7 +128,7 @@ public class ToDoMVC {
     void marksAllItemsComplete() {
         String[] itemstoAdd = {"test1", "test2", "test3"};
         addToList(itemstoAdd);
-        checkAllBoxes();
+        setAllCheckboxesState(true);
         List<WebElement> listItems = driver.findElements(By.cssSelector(".todo-list li"));
         for (WebElement li : listItems) {
             String classAttr = li.getAttribute("class");
@@ -139,8 +141,8 @@ public class ToDoMVC {
     void markItemIncomplete() {
         String[] itemstoAdd = {"test1"};
         addToList(itemstoAdd);
-        checkOneBox();
-        checkOneBox();
+        setCheckboxState(0, true);
+        setCheckboxState(0, false);
         WebElement item1 = driver.findElement(By.cssSelector("ul.todo-list li div label"));
         assert item1.getText().equals("test1");
     }
