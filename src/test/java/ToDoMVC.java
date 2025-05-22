@@ -89,6 +89,12 @@ public class ToDoMVC {
     }
 
     @Test
+    void testNoStatusBarPresent() {
+        List<WebElement> statusBar = driver.findElements(By.cssSelector(".filters"));
+        assertTrue(statusBar.isEmpty(), "Expect status bar to be absent");
+    }
+
+    @Test
     void testMarkCompleteUsingArrow() {
         String[] itemstoAdd = {"test1", "test2"};
         addToList(itemstoAdd);
